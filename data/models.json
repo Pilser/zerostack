@@ -733,6 +733,11 @@
       "context": 1048576
     },
     {
+      "id": "deepseek/deepseek-v4.1-flash",
+      "name": "DeepSeek V4.1 Flash",
+      "context": 1048576
+    },
+    {
       "id": "google/gemini-2.5-flash",
       "name": "Gemini 2.5 Flash",
       "context": 1048576
@@ -844,17 +849,17 @@
     },
     {
       "id": "google/gemma-3-12b-it",
-      "name": "Gemma 3 12B",
+      "name": "Gemma 3 12B IT",
       "context": 131072
     },
     {
       "id": "google/gemma-3-27b-it",
-      "name": "Gemma 3 27B",
+      "name": "Gemma 3 27B IT",
       "context": 131072
     },
     {
       "id": "google/gemma-3-4b-it",
-      "name": "Gemma 3 4B",
+      "name": "Gemma 3 4B IT",
       "context": 131072
     },
     {
@@ -889,7 +894,7 @@
     },
     {
       "id": "meta-llama/llama-3.1-70b-instruct",
-      "name": "Llama 3.1 70B Instruct",
+      "name": "Llama-3.1-70B-Instruct",
       "context": 131072
     },
     {
@@ -1010,7 +1015,7 @@
     {
       "id": "mistralai/mistral-small-3.2-24b-instruct",
       "name": "Mistral Small 3.2 24B",
-      "context": 131072
+      "context": 256000
     },
     {
       "id": "mistralai/mixtral-8x22b-instruct",
@@ -1304,7 +1309,7 @@
     },
     {
       "id": "openai/gpt-oss-safeguard-20b",
-      "name": "gpt-oss-safeguard-20b",
+      "name": "GPT OSS Safeguard 20B",
       "context": 131072
     },
     {
@@ -1665,7 +1670,7 @@
     {
       "id": "z-ai/glm-4.7-flash",
       "name": "GLM-4.7-Flash",
-      "context": 202752
+      "context": 200000
     },
     {
       "id": "z-ai/glm-5",
