@@ -118,6 +118,10 @@ pub struct Engine {
     turn_trace: Vec<CompactString>,
     /// One-shot prompt restore for `.prompt msg` (see `ChainState`).
     dot_prompt_restore: Option<String>,
+    /// Optional live tap: when set, `drain_runner` clones every `AgentEvent`
+    /// to this channel before folding it — the headless equivalent of the TUI
+    /// reading `runner.event_rx` directly. Unset = plain `run_string` behavior.
+    event_forward: Option<tokio::sync::mpsc::Sender<AgentEvent>>,
 }
 
 impl Engine {
@@ -148,6 +152,7 @@ impl Engine {
             response_buf: String::new(),
             turn_trace: Vec::new(),
             dot_prompt_restore: None,
+            event_forward: None,
         }
     }
 
@@ -200,6 +205,23 @@ impl Engine {
             return Ok(self.run_bang(text).await);
         }
         Ok(self.run_agent_text(text).await)
+    }
+
+    /// `run_string` with a live event tap: every `AgentEvent` is forwarded to
+    /// `tx` as it arrives (tokens, reasoning, tool calls/results, Done/Error),
+    /// then the final `RunOutput` is returned as usual. The tap is cleared
+    /// before returning, so later `run_string` calls are unaffected.
+    /// Embedders map the events to their own stream types (no dependency from
+    /// this crate toward any embedder).
+    pub async fn run_streaming(
+        &mut self,
+        input: &str,
+        tx: tokio::sync::mpsc::Sender<AgentEvent>,
+    ) -> anyhow::Result<RunOutput> {
+        self.event_forward = Some(tx);
+        let out = self.run_string(input).await;
+        self.event_forward = None;
+        out
     }
 
     // ── main agent run ────────────────────────────────────────────────
@@ -279,6 +301,13 @@ impl Engine {
         let mut turn_error: Option<String> = None;
 
         while let Some(event) = runner.event_rx.recv().await {
+            // Live tap for embedders (TUI equivalent: reading event_rx direct).
+            // `send` (not `try_send`): lossless — the consumer must keep
+            // receiving while the turn runs. A dropped receiver is ignored so
+            // the turn still completes and the session stays consistent.
+            if let Some(tx) = self.event_forward.clone() {
+                let _ = tx.send(event.clone()).await;
+            }
             match event {
                 AgentEvent::Reasoning(text) => {
                     if self.show_reasoning {
