@@ -15,6 +15,22 @@ use crate::permission::ask::AskSender;
 use crate::permission::checker::PermCheck;
 use crate::sandbox::Sandbox;
 
+/// Factory for one embedder-supplied tool instance. Factories (not instances)
+/// are registered because each agent build consumes its tools by value; the
+/// `Arc` makes the registry cloneable across builds and threads.
+pub type ExtraToolFactory =
+    std::sync::Arc<dyn Fn() -> Box<dyn rig::tool::ToolDyn> + Send + Sync>;
+
+static EXTRA_TOOL_FACTORIES: std::sync::OnceLock<Vec<ExtraToolFactory>> =
+    std::sync::OnceLock::new();
+
+/// Register embedder tool factories (e.g. zerowrapper's in-process MCP
+/// providers). Call once at boot, before the first agent turn; later agent
+/// builds pick them up. Last call wins if invoked repeatedly.
+pub fn set_extra_tool_factories(factories: Vec<ExtraToolFactory>) {
+    let _ = EXTRA_TOOL_FACTORIES.set(factories);
+}
+
 /// Assemble the system-prompt preamble every request carries: the base
 /// `SYSTEM_PROMPT`, tool-use guidance, context files (AGENTS.md, ARCHITECTURE.md,
 /// active mode prompt), working directory, `/add`ed files, memory, and the user
@@ -382,7 +398,14 @@ pub async fn build_agent_inner<M: CompletionModel + 'static>(
             all_tools.push(Box::new(tools::lsp::LspTool::new(lsp.clone())));
         }
 
-        let all_tools = filter_tools_by_allowlist(all_tools, &cli.resolve_tools(cfg));
+        let mut all_tools = filter_tools_by_allowlist(all_tools, &cli.resolve_tools(cfg));
+
+        // Embedder tools (registered via `set_extra_tool_factories`): appended
+        // AFTER the CLI allowlist so an explicitly injected tool is always
+        // present, with its original (unprefixed) name intact.
+        if let Some(factories) = EXTRA_TOOL_FACTORIES.get() {
+            all_tools.extend(factories.iter().map(|f| f()));
+        }
 
         #[cfg(feature = "hooks")]
         let all_tools = crate::extras::hooks::wrap_from_global(all_tools, permission.clone());

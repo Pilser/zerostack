@@ -30,3 +30,7 @@ pub mod session;
 pub mod setup;
 pub mod startup;
 pub mod ui;
+
+/// Re-exported so embedders can implement `rig::tool::ToolDyn` against the
+/// exact rig version this crate builds with (no separate rig dependency drift).
+pub use rig;
