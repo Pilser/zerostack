@@ -120,6 +120,7 @@ impl AgentBuildCtx<'_> {
             extra_body,
             #[cfg(feature = "mcp")]
             self.mcp_manager,
+            Vec::new(),
         )
         .await
     }

@@ -949,6 +949,7 @@ impl Startup {
                 extra_body,
                 #[cfg(feature = "mcp")]
                 mcp_manager.as_ref(),
+                Vec::new(),
             )
             .await;
             #[cfg(feature = "advisor")]

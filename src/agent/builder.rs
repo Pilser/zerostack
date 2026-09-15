@@ -37,6 +37,23 @@ pub fn set_extra_tool_factories(factories: Vec<ExtraToolFactory>) {
 /// `SUFFIX.md`. Extracted from [`build_agent_inner`] so its token cost can be
 /// estimated (see [`estimate_overhead`]) without building an `Agent`.
 pub fn build_preamble(context: &ContextFiles, reasoning_enabled: bool) -> String {
+    // One-prompt override (embedder builds): a single file replaces the
+    // ENTIRE assembled preamble (base + todo guidance + context layers).
+    // Resolution: $ZS_SYSTEM_PROMPT_FILE, else ./SYSTEM.md in the process
+    // working directory (the agent workspace), else the assembled default.
+    // Note: tool JSON schemas still reach the model separately — only the
+    // prose guidance (including todo-tool usage) is replaced, so the file
+    // should document any tools the agent must prefer.
+    let single = std::env::var_os("ZS_SYSTEM_PROMPT_FILE")
+        .map(std::path::PathBuf::from)
+        .or_else(|| Some(std::path::PathBuf::from("SYSTEM.md")));
+    if let Some(path) = single {
+        if let Ok(text) = std::fs::read_to_string(&path) {
+            if !text.trim().is_empty() {
+                return text;
+            }
+        }
+    }
     let reasoning_prefix = if reasoning_enabled {
         "You reason carefully and think step-by-step.\n\n"
     } else {
