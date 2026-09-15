@@ -130,7 +130,16 @@ pub struct Engine {
     /// by `ensure_agent` on first build. Unlike the global factories these
     /// are constructed with engine (session) context.
     extra_tools: Vec<Box<dyn rig::tool::ToolDyn>>,
+    /// True-cancel slot: the embedder hands in shared storage, the drain
+    /// loop publishes the live runner's `AbortHandle` there. Aborting it
+    /// kills the model stream AND the tool children (kill_on_drop) for real —
+    /// unlike dropping our own task, which would detach the runner invisibly.
+    abort_slot: Option<AbortSlot>,
 }
+
+/// Shared storage for one turn's true-cancel handle. Created per turn by the
+/// embedder, filled by `drain_runner`, aborted by the embedder on cancel.
+pub type AbortSlot = std::sync::Arc<std::sync::Mutex<Option<tokio::task::AbortHandle>>>;
 
 impl Engine {
     /// Build an engine from owned state. The agent is built lazily on the
@@ -163,6 +172,7 @@ impl Engine {
             event_forward: None,
             current_turn: None,
             extra_tools: Vec::new(),
+            abort_slot: None,
         }
     }
 
@@ -178,6 +188,13 @@ impl Engine {
     pub fn with_extra_tools(mut self, tools: Vec<Box<dyn rig::tool::ToolDyn>>) -> Self {
         self.extra_tools = tools;
         self
+    }
+
+    /// Arm the true-cancel slot for the coming turn. The drain loop publishes
+    /// the runner's abort handle there; the embedder aborts it on cancel and
+    /// the turn ends gracefully (empty close, engine survives, context kept).
+    pub fn set_abort_slot(&mut self, slot: AbortSlot) {
+        self.abort_slot = Some(slot);
     }
 
     /// Borrow the session (assertions, persistence).
@@ -327,6 +344,14 @@ impl Engine {
         &mut self,
         mut runner: AgentRunner,
     ) -> anyhow::Result<(String, TurnUsage)> {
+        // Publish the live abort handle for true-cancel (embedder aborts
+        // THIS, not our task — dropping us would detach the runner and its
+        // tool children would keep running invisibly).
+        if let Some(slot) = &self.abort_slot {
+            if let Ok(mut guard) = slot.lock() {
+                *guard = Some(runner.abort_handle.clone());
+            }
+        }
         self.response_buf.clear();
         self.pending_tool_calls.clear();
         let mut usage = TurnUsage::default();
@@ -433,6 +458,13 @@ impl Engine {
         }
         self.turn_trace.clear();
         self.pending_tool_calls.clear();
+        // Turn over (done, error, or aborted from outside): withdraw the
+        // cancel handle so a later cancel can't hit a dead runner.
+        if let Some(slot) = &self.abort_slot {
+            if let Ok(mut guard) = slot.lock() {
+                *guard = None;
+            }
+        }
 
         if let Some(e) = turn_error {
             anyhow::bail!("{e}");
