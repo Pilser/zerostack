@@ -426,6 +426,9 @@ impl Session {
             content: CompactString::new(content),
             estimated_tokens: tokens,
             tool,
+            // Stamped by the caller (engine turn path) right after; `None`
+            // for messages added outside any turn (compaction recaps, …).
+            turn: None,
         });
         self.total_estimated_tokens = self.total_estimated_tokens.saturating_add(tokens);
         self.updated_at = CompactString::new(chrono::Utc::now().to_rfc3339());
@@ -738,6 +741,7 @@ impl Session {
             content: CompactString::from(summary.clone()),
             estimated_tokens: summary_tokens,
             tool: None,
+            turn: None,
         };
 
         // Remove summarized messages and insert summary
