@@ -29,6 +29,11 @@ pub struct SessionMessage {
     pub estimated_tokens: u64,
     #[serde(default)]
     pub tool: Option<ToolRecord>,
+    /// Display-dedup key: the embedder's turn id that produced this message.
+    /// `None` for files written before turn stamping (and for messages the
+    /// engine adds outside any turn, e.g. compaction recaps).
+    #[serde(default)]
+    pub turn: Option<CompactString>,
 }
 
 /// Structured, machine-readable counterpart to a `ToolCall`/`ToolResult`

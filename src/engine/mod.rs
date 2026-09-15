@@ -122,6 +122,10 @@ pub struct Engine {
     /// to this channel before folding it — the headless equivalent of the TUI
     /// reading `runner.event_rx` directly. Unset = plain `run_string` behavior.
     event_forward: Option<tokio::sync::mpsc::Sender<AgentEvent>>,
+    /// Turn key for the in-flight `run_streaming` call: stamped onto every
+    /// session message the turn produces, so embedders can upsert live rows
+    /// against persisted history instead of double-rendering on resume.
+    current_turn: Option<String>,
 }
 
 impl Engine {
@@ -153,6 +157,7 @@ impl Engine {
             turn_trace: Vec::new(),
             dot_prompt_restore: None,
             event_forward: None,
+            current_turn: None,
         }
     }
 
@@ -217,11 +222,25 @@ impl Engine {
         &mut self,
         input: &str,
         tx: tokio::sync::mpsc::Sender<AgentEvent>,
+        turn: Option<String>,
     ) -> anyhow::Result<RunOutput> {
         self.event_forward = Some(tx);
+        self.current_turn = turn;
         let out = self.run_string(input).await;
         self.event_forward = None;
+        self.current_turn = None;
         out
+    }
+
+    /// Stamp the turn key onto the most recently added session message.
+    /// Called after every `add_message`/`add_tool_*` in the turn paths so
+    /// persisted history carries the same key the live stream reports.
+    fn stamp_turn(&mut self) {
+        if let Some(turn) = self.current_turn.clone() {
+            if let Some(m) = self.session.messages.last_mut() {
+                m.turn = Some(CompactString::new(turn));
+            }
+        }
     }
 
     // ── main agent run ────────────────────────────────────────────────
@@ -271,6 +290,7 @@ impl Engine {
             )
             .await;
         self.session.add_message(MessageRole::User, &prompt);
+        self.stamp_turn();
         #[cfg(feature = "advisor")]
         crate::extras::advisor::set_session_messages(self.session.messages.clone());
         if !self.cli.no_session
@@ -330,6 +350,7 @@ impl Engine {
                             .push(CompactString::from(format!("→ {summary}")));
                     }
                     let call_id = self.session.add_tool_call(&name, &args);
+                    self.stamp_turn();
                     self.push_pending_tool_call(event_id, call_id);
                     self.save_session_best_effort();
                 }
@@ -352,6 +373,7 @@ impl Engine {
                     }
                     let call_id = self.resolve_tool_result_call_id(&event_id, &name);
                     self.session.add_tool_result(call_id, &name, &output);
+                    self.stamp_turn();
                     self.save_session_best_effort();
                 }
                 AgentEvent::CompletionCall {
@@ -410,6 +432,7 @@ impl Engine {
     /// non-rendering half of `handle_agent_done`.
     async fn finish_turn(&mut self, response: &str, usage: TurnUsage) {
         self.session.add_message(MessageRole::Assistant, response);
+        self.stamp_turn();
         self.session.total_input_tokens = self
             .session
             .total_input_tokens

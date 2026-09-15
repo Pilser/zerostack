@@ -106,6 +106,18 @@ fn safe_path_component(value: &str) -> String {
     }
 }
 
+/// Load one session by id (`<id>.json`), for embedders resuming an
+/// existing conversation into a fresh in-process engine.
+pub fn load_session(id: &str) -> anyhow::Result<Option<Session>> {
+    let path = session_dir().join(format!("{}.json", id));
+    if !path.exists() {
+        return Ok(None);
+    }
+    let json = std::fs::read_to_string(&path)?;
+    let session: Session = serde_json::from_str(&json)?;
+    Ok(Some(session))
+}
+
 pub fn delete_session(id: &str) -> anyhow::Result<()> {
     let dir = session_dir();
     let path = dir.join(format!("{}.json", id));
