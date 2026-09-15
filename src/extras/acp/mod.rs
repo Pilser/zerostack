@@ -317,6 +317,7 @@ async fn run_prompt(
         extra_body,
         #[cfg(feature = "mcp")]
         None::<&crate::extras::mcp::McpClientManager>,
+        Vec::new(),
     )
     .await;
 

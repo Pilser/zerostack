@@ -1312,6 +1312,7 @@ async fn build_openai_agent(
     temperature: Option<f64>,
     extra_body: Option<serde_json::Value>,
     #[cfg(feature = "mcp")] mcp_manager: Option<&McpClientManager>,
+    extra_tools: Vec<Box<dyn rig::tool::ToolDyn>>,
 ) -> OpenAiAgent {
     match model {
         OpenAiModel::Responses(m) => OpenAiAgent::Responses(
@@ -1328,6 +1329,7 @@ async fn build_openai_agent(
                 extra_body,
                 #[cfg(feature = "mcp")]
                 mcp_manager,
+                extra_tools,
             )
             .await,
         ),
@@ -1345,6 +1347,7 @@ async fn build_openai_agent(
                 extra_body,
                 #[cfg(feature = "mcp")]
                 mcp_manager,
+                extra_tools,
             )
             .await,
         ),
@@ -1364,6 +1367,7 @@ pub async fn build_agent(
     temperature: Option<f64>,
     extra_body: Option<serde_json::Value>,
     #[cfg(feature = "mcp")] mcp_manager: Option<&McpClientManager>,
+    extra_tools: Vec<Box<dyn rig::tool::ToolDyn>>,
 ) -> AnyAgent {
     match model {
         AnyModel::OpenRouter(m, routing) => AnyAgent::OpenRouter(
@@ -1380,6 +1384,7 @@ pub async fn build_agent(
                 merge_extra_body(routing, extra_body),
                 #[cfg(feature = "mcp")]
                 mcp_manager,
+                extra_tools,
             )
             .await,
         ),
@@ -1397,6 +1402,7 @@ pub async fn build_agent(
                 extra_body,
                 #[cfg(feature = "mcp")]
                 mcp_manager,
+                extra_tools,
             )
             .await,
         ),
@@ -1414,6 +1420,7 @@ pub async fn build_agent(
                 extra_body,
                 #[cfg(feature = "mcp")]
                 mcp_manager,
+                extra_tools,
             )
             .await,
         ),
@@ -1431,6 +1438,7 @@ pub async fn build_agent(
                 extra_body,
                 #[cfg(feature = "mcp")]
                 mcp_manager,
+                extra_tools,
             )
             .await,
         ),
@@ -1448,6 +1456,7 @@ pub async fn build_agent(
                 extra_body,
                 #[cfg(feature = "mcp")]
                 mcp_manager,
+                extra_tools,
             )
             .await,
         ),

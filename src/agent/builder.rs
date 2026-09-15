@@ -233,6 +233,7 @@ pub async fn build_agent_inner<M: CompletionModel + 'static>(
     // `None` for providers that need no extra routing.
     additional_params: Option<serde_json::Value>,
     #[cfg(feature = "mcp")] mcp_manager: Option<&McpClientManager>,
+    extra_tools: Vec<Box<dyn rig::tool::ToolDyn>>,
 ) -> Agent<crate::agent::image_relay::ImageRelayModel<M>> {
     #[cfg(feature = "lsp")]
     let lsp_manager = if cli.resolve_no_tools(cfg) {
@@ -406,6 +407,9 @@ pub async fn build_agent_inner<M: CompletionModel + 'static>(
         if let Some(factories) = EXTRA_TOOL_FACTORIES.get() {
             all_tools.extend(factories.iter().map(|f| f()));
         }
+        // Per-engine embedder tools (e.g. session-bound `ask_user`): same
+        // treatment, constructed with engine context by the embedder.
+        all_tools.extend(extra_tools);
 
         #[cfg(feature = "hooks")]
         let all_tools = crate::extras::hooks::wrap_from_global(all_tools, permission.clone());

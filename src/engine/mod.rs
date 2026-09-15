@@ -126,6 +126,10 @@ pub struct Engine {
     /// session message the turn produces, so embedders can upsert live rows
     /// against persisted history instead of double-rendering on resume.
     current_turn: Option<String>,
+    /// Per-engine embedder tools (e.g. a session-bound `ask_user`): consumed
+    /// by `ensure_agent` on first build. Unlike the global factories these
+    /// are constructed with engine (session) context.
+    extra_tools: Vec<Box<dyn rig::tool::ToolDyn>>,
 }
 
 impl Engine {
@@ -158,12 +162,21 @@ impl Engine {
             dot_prompt_restore: None,
             event_forward: None,
             current_turn: None,
+            extra_tools: Vec::new(),
         }
     }
 
     /// Inject a pre-built agent (tests inject `AnyAgent::Mock`).
     pub fn with_agent(mut self, agent: AnyAgent) -> Self {
         self.agent = Some(agent);
+        self
+    }
+
+    /// Attach per-engine embedder tools, consumed on first agent build
+    /// (alongside the global factories). Tools keep the names they are
+    /// constructed with — no prefixes added.
+    pub fn with_extra_tools(mut self, tools: Vec<Box<dyn rig::tool::ToolDyn>>) -> Self {
+        self.extra_tools = tools;
         self
     }
 
@@ -562,6 +575,7 @@ impl Engine {
             extra_body,
             #[cfg(feature = "mcp")]
             None,
+            std::mem::take(&mut self.extra_tools),
         )
         .await;
         self.session.overhead_tokens =
@@ -612,6 +626,9 @@ impl Engine {
             extra_body,
             #[cfg(feature = "mcp")]
             None,
+            // Model-switch rebuild: injected tools were consumed by the first
+            // build; v1 does not re-inject (no model switch in embedded use).
+            Vec::new(),
         )
         .await;
         self.agent = Some(agent);
