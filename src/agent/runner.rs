@@ -647,12 +647,12 @@ where
     // design.md decision 5.
     let mut recorded_interactions: Vec<ToolInteraction> = Vec::new();
     // Subagent tool calls reach this loop on a side channel rather than as
-    // stream items: `run_subagent` sends them from the tokio task the `task`
+    // stream items: `run_subagent` sends them from the tokio task the `subagent`
     // tool spawned, concurrently with this turn's own stream. Only
     // `spawn_agent` (the TUI) ever published a sender, so headless runs left
     // subagent activity untraced; publishing one here is what makes it
     // recordable. Same channel capacity as `spawn_agent`'s, and drained by
-    // the `select!` below while the `task` tool is still running, so a
+    // the `select!` below while the `subagent` tool is still running, so a
     // subagent making many tool calls cannot fill it and stall.
     #[cfg(feature = "subagents")]
     let (subagent_tx, mut subagent_rx) = mpsc::channel::<AgentEvent>(32);
@@ -695,7 +695,7 @@ where
                 tokio::select! {
                     // `biased`: drain everything already queued before
                     // touching the stream, so a subagent event that arrived
-                    // during the `task` call is attributed to that call and
+                    // during the `subagent` call is attributed to that call and
                     // not to whatever comes next.
                     biased;
                     Some(event) = subagent_rx.recv() => {
@@ -780,14 +780,14 @@ where
                         let _ = std::io::Write::flush(&mut std::io::stdout());
                     }
                     // Attribute anything still queued to the call that just
-                    // finished: a subagent only runs inside its `task` call,
+                    // finished: a subagent only runs inside its `subagent` call,
                     // and every send completes before that call returns. The
                     // `select!` above normally has them already, but a tool
                     // that sends without ever yielding hands us its result in
                     // the same poll, leaving them queued until here.
                     // Best-effort under a parallel batch: with several calls
                     // in flight the side channel carries no call id, so a
-                    // sibling's result can claim the `task` call's subagents.
+                    // sibling's result can claim the `subagent` call's subagents.
                     #[cfg(feature = "subagents")]
                     while let Ok(event) = subagent_rx.try_recv() {
                         push_subagent_call(&mut pending_subagent_calls, event);
@@ -888,7 +888,7 @@ pub struct ToolInteraction {
     /// concurrency boundary: only this loop knows which main-agent call was
     /// in flight when each event arrived, and `dispatch_print` turns the
     /// nesting into `parent_call_id` once the enclosing call has an id.
-    /// Empty for anything but a `task` call when that call runs alone; under a
+    /// Empty for anything but a `subagent` call when that call runs alone; under a
     /// parallel batch the attribution is best-effort, since queued subagent
     /// calls attach to the batch's first-arriving result whichever call it
     /// answers.

@@ -230,7 +230,7 @@ impl PermissionChecker {
     }
 
     fn is_read_tool(&self, tool: &str) -> bool {
-        matches!(tool, "read" | "grep" | "find_files" | "list_dir" | "task")
+        matches!(tool, "read" | "grep" | "find_files" | "list_dir" | "subagent")
     }
 
     fn resolve_check_action(&self, tool: &str, matched: &SmallVec<[Action; 4]>) -> Action {

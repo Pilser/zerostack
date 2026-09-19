@@ -39,7 +39,7 @@ impl TaskTool {
 }
 
 impl Tool for TaskTool {
-    const NAME: &'static str = "task";
+    const NAME: &'static str = "subagent";
     type Error = ToolError;
     type Args = TaskArgs;
     type Output = String;
@@ -74,7 +74,7 @@ editing in a known location, grepping for a literal you will act on immediately.
 
     async fn call(&self, args: TaskArgs) -> Result<String, ToolError> {
         if args.prompts.is_empty() {
-            return Err(ToolError::Msg("task: prompts must not be empty".into()));
+            return Err(ToolError::Msg("subagent: prompts must not be empty".into()));
         }
 
         check_perm(
@@ -229,7 +229,7 @@ pub(crate) fn combine_results(outputs: &[(usize, String, String)]) -> String {
 }
 
 /// Aborts all registered subagent tasks on drop. If the parent agent cancels
-/// the `task` tool call (e.g. the session ends or the loop exits), in-flight
+/// the `subagent` tool call (e.g. the session ends or the loop exits), in-flight
 /// subagents are stopped immediately rather than leaking.
 struct SubagentGuard {
     handles: Vec<tokio::task::AbortHandle>,

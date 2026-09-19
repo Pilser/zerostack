@@ -1,5 +1,5 @@
 ---
-description: "Parallel read-only subagents in zerostack: the task tool, model and provider overrides, and per-agent tool limits."
+description: "Parallel read-only subagents in zerostack: the subagent tool, model and provider overrides, and per-agent tool limits."
 ---
 
 # Subagents (read-only codebase exploration)
@@ -15,7 +15,7 @@ Subagents are designed for **highly specific questions**, not wide exploration.
 Avoid broad instructions like "check all documentation" — instead ask precise
 questions that can be answered with a few file reads and searches.
 
-When the main agent calls the `task` tool, one subagent is spawned per prompt.
+When the main agent calls the `subagent` tool, one subagent is spawned per prompt.
 If multiple prompts are given, they run in **parallel**. Each subagent has
 access only to read tools and returns a summary of findings, which the main
 agent then incorporates into its response.
@@ -30,9 +30,9 @@ Subagents are **opt-in** via the `subagents` Cargo feature:
 default = ["loop", "git-worktree", "mcp", "subagents"]
 ```
 
-## The `task` Tool
+## The `subagent` Tool
 
-The main agent has a new tool called `task`. It accepts:
+The main agent has a new tool called `subagent`. It accepts:
 
 ```json
 {
@@ -83,8 +83,8 @@ its tools). This is safe because it only has read tools:
 - The worst a subagent can do is read files, which is exactly what it is
   designed for.
 
-The main agent's `task` tool itself goes through the normal permission check
-(`check_perm("task", …)`), so users can allow/ask/deny it via their
+The main agent's `subagent` tool itself goes through the normal permission check
+(`check_perm("subagent", …)`), so users can allow/ask/deny it via their
 `opencode.json` permission rules.
 
 ## Configuration
@@ -92,7 +92,7 @@ The main agent's `task` tool itself goes through the normal permission check
 | Config field           | Type      | Default             | Description                           |
 |------------------------|-----------|---------------------|---------------------------------------|
 | `task_max_turns`       | `usize`   | `15`                | Max agent turns per subagent          |
-| `task_enabled`         | `bool`    | `true`              | Whether the `task` tool is registered |
+| `task_enabled`         | `bool`    | `true`              | Whether the `subagent` tool is registered |
 | `subagent_model`       | `string`  | `none (uses main model)` | Model name or quick-model alias       |
 | `subagent_provider`    | `string`  | (same as main)      | Provider for the subagent (optional)  |
 
@@ -133,7 +133,7 @@ Example `opencode.json`:
   If the quick model uses a different provider, a new API client is created.
 
 These commands update the global `SubagentConfig` at runtime. The next call
-to the `task` tool picks up the new settings automatically.
+to the `subagent` tool picks up the new settings automatically.
 
 ## Architecture
 
@@ -141,7 +141,7 @@ to the `task` tool picks up the new settings automatically.
 Main Agent                               Subagent(s)
 ┌──────────────┐                         ┌─────────────────────┐
 │ read/write   │                         │ read                │
-│ edit/bash    │  calls "task" tool      │ grep                │
+│ edit/bash    │  calls "subagent" tool  │ grep                │
 │ grep/find_files│ ──────────────────────→│ find_files          │
 │ list_dir     │   with prompt(s)        │ list_dir            │
 │ todo         │                         │ todo                │

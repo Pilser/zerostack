@@ -62,7 +62,7 @@ pub enum ToolRecord {
         truncated: bool,
         full_output_path: Option<CompactString>,
     },
-    /// A tool call made by a subagent, attributed to the enclosing `task`
+    /// A tool call made by a subagent, attributed to the enclosing `subagent`
     /// call via `parent_call_id` (the `Call` record's `id`). Deliberately has
     /// no `id` of its own: subagent tool *results* have no event to record
     /// (design.md Non-Goals), so nothing ever links back to one, and an `id`

@@ -146,7 +146,7 @@ pub fn format_tool_call_summary(name: &str, args: &serde_json::Value) -> String 
         _ => return name.to_string(),
     };
 
-    if name == "task" {
+    if name == "subagent" {
         return format_task_summary(obj);
     }
 
@@ -184,7 +184,7 @@ pub fn format_tool_call_summary(name: &str, args: &serde_json::Value) -> String 
 fn format_task_summary(obj: &serde_json::Map<String, serde_json::Value>) -> String {
     let prompts = match obj.get("prompts") {
         Some(serde_json::Value::Array(arr)) => arr,
-        _ => return "task".to_string(),
+        _ => return "subagent".to_string(),
     };
     let parts: Vec<String> = prompts
         .iter()
@@ -192,9 +192,9 @@ fn format_task_summary(obj: &serde_json::Map<String, serde_json::Value>) -> Stri
         .map(display_value)
         .collect();
     if parts.is_empty() {
-        "task".to_string()
+        "subagent".to_string()
     } else {
-        format!("task {}", parts.join(" "))
+        format!("subagent {}", parts.join(" "))
     }
 }
 

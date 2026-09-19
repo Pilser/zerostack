@@ -30,11 +30,11 @@ struct TaskArgs {
 
 /// Stand-in for `TaskTool`: emits one `SubagentToolCall` event per prompt on
 /// the channel `run_print` wires up, then returns a summary, mirroring a real
-/// `task` call whose subagents each ran one tool.
+/// `subagent` call whose subagents each ran one tool.
 struct FakeTaskTool;
 
 impl Tool for FakeTaskTool {
-    const NAME: &'static str = "task";
+    const NAME: &'static str = "subagent";
 
     type Error = ToolError;
     type Args = TaskArgs;
@@ -76,7 +76,7 @@ fn long_prompt(tag: &str) -> String {
 }
 
 fn task_call_event(id: &str, prompts: &[String]) -> MockStreamEvent {
-    MockStreamEvent::tool_call(id, "task", serde_json::json!({ "prompts": prompts }))
+    MockStreamEvent::tool_call(id, "subagent", serde_json::json!({ "prompts": prompts }))
 }
 
 /// Mirrors `dispatch_print`'s recording sequence (`src/startup.rs`) exactly:
@@ -158,7 +158,7 @@ async fn headless_subagent_calls_recorded_with_full_args_and_parent_call_id() {
 
     assert_eq!(outcome.tool_interactions.len(), 1);
     let interaction = &outcome.tool_interactions[0];
-    assert_eq!(interaction.name, "task");
+    assert_eq!(interaction.name, "subagent");
     assert_eq!(
         interaction
             .subagent_calls

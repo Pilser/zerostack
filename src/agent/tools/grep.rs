@@ -244,7 +244,7 @@ impl Tool for GrepTool {
         // the agent toward narrowing or task.
         let result = if !truncated && total >= 10 && files_with_matches >= 2 {
             format!(
-                "{}\n\n[{} matches across {} files; for cross-file enumeration or synthesis, `task` returns a verified summary in one call]",
+                "{}\n\n[{} matches across {} files; for cross-file enumeration or synthesis, `subagent` returns a verified summary in one call]",
                 result, total, files_with_matches,
             )
         } else {

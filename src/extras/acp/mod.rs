@@ -385,7 +385,7 @@ async fn run_prompt(
             AgentEvent::SubagentToolCall { name, args } => {
                 // Announce-only: subagent calls carry no correlating id, so
                 // they never receive a ToolCallUpdate. (Previously they
-                // hijacked the single pending slot, so the enclosing `task`
+                // hijacked the single pending slot, so the enclosing `subagent`
                 // call's result got attached to the subagent's entry.)
                 // Announced as already Completed, since nothing will ever
                 // update it out of the default Pending status.
