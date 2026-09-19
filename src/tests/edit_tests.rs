@@ -58,6 +58,7 @@ async fn test_sim_rejects_no_blocks() {
             block: Some("no blocks here".into()),
             file_crc: None,
             edits: None,
+            note: None,
         })
         .await;
     assert!(result.is_err());
@@ -77,6 +78,7 @@ async fn test_sim_rejects_empty_search() {
             block: Some("<<<<<<< SEARCH\n=======\nreplacement\n>>>>>>> REPLACE".into()),
             file_crc: None,
             edits: None,
+            note: None,
         })
         .await;
     assert!(result.is_err());

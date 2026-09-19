@@ -70,7 +70,8 @@ impl Tool for GrepTool {
                 "context_lines": {
                     "type": "integer",
                     "description": "Number of context lines to show before and after each match (like grep -C)"
-                }
+                },
+                "note": { "type": "string", "description": "Short human note shown in the UI next to this action (optional)" }
             },
             "required": ["pattern"]
         })

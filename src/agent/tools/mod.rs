@@ -114,12 +114,18 @@ pub struct ReadArgs {
     pub path: String,
     pub offset: Option<usize>,
     pub limit: Option<usize>,
+    /// Short human note shown in the UI pile (optional, never required).
+    #[serde(default)]
+    pub note: Option<String>,
 }
 
 #[derive(Deserialize)]
 pub struct WriteArgs {
     pub path: String,
     pub content: String,
+    /// Short human note shown in the UI pile (optional, never required).
+    #[serde(default)]
+    pub note: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -131,6 +137,9 @@ pub struct EditArgs {
     pub file_crc: Option<String>,
     #[serde(default)]
     pub edits: Option<Vec<EditOp>>,
+    /// Short human note shown in the UI pile (optional, never required).
+    #[serde(default)]
+    pub note: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -150,6 +159,9 @@ pub(crate) struct EditOp {
 pub struct BashArgs {
     pub command: String,
     pub timeout: Option<u64>,
+    /// Short human note shown in the UI pile (optional, never required).
+    #[serde(default)]
+    pub note: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -158,17 +170,26 @@ pub struct GrepArgs {
     pub path: Option<String>,
     pub include: Option<String>,
     pub context_lines: Option<usize>,
+    /// Short human note shown in the UI pile (optional, never required).
+    #[serde(default)]
+    pub note: Option<String>,
 }
 
 #[derive(Deserialize)]
 pub struct FindFilesArgs {
     pub pattern: String,
     pub path: Option<String>,
+    /// Short human note shown in the UI pile (optional, never required).
+    #[serde(default)]
+    pub note: Option<String>,
 }
 
 #[derive(Deserialize)]
 pub struct ListDirArgs {
     pub path: Option<String>,
+    /// Short human note shown in the UI pile (optional, never required).
+    #[serde(default)]
+    pub note: Option<String>,
 }
 
 async fn handle_ask_inner(

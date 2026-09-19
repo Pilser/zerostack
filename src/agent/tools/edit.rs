@@ -525,7 +525,8 @@ impl Tool for EditTool {
                 "type": "object",
                 "properties": {
                     "path": { "type": "string", "description": "Path to the file (relative or absolute)" },
-                    "block": { "type": "string", "description": "One or more SEARCH/REPLACE blocks:\n<<<<<<< SEARCH\nexisting code to find\n=======\nreplacement code\n>>>>>>> REPLACE\n\nInclude multiple blocks for separate edits to the same file." }
+                    "block": { "type": "string", "description": "One or more SEARCH/REPLACE blocks:\n<<<<<<< SEARCH\nexisting code to find\n=======\nreplacement code\n>>>>>>> REPLACE\n\nInclude multiple blocks for separate edits to the same file." },
+                    "note": { "type": "string", "description": "Short human note shown in the UI next to this action (optional)" }
                 },
                 "required": ["path", "block"]
             }),
@@ -546,7 +547,8 @@ impl Tool for EditTool {
                             "required": ["text"]
                         },
                         "description": "Array of edit operations"
-                    }
+                    },
+                    "note": { "type": "string", "description": "Short human note shown in the UI next to this action (optional)" }
                 },
                 "required": ["path", "file_crc", "edits"]
             }),

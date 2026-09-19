@@ -184,7 +184,8 @@ impl Tool for BashTool {
             "type": "object",
             "properties": {
                 "command": { "type": "string", "description": "Bash command to execute" },
-                "timeout": { "type": "integer", "description": "Timeout in milliseconds (optional)" }
+                "timeout": { "type": "integer", "description": "Timeout in milliseconds (optional)" },
+                "note": { "type": "string", "description": "Short human note shown in the UI next to this action (optional)" }
             },
             "required": ["command"]
         })

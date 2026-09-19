@@ -25,6 +25,9 @@ pub struct TaskArgs {
     /// One or more exploration prompts. When multiple are provided,
     /// they are explored in parallel subagents and results are combined.
     pub prompts: Vec<String>,
+    /// Short human note shown in the UI pile (optional, never required).
+    #[serde(default)]
+    pub note: Option<String>,
 }
 
 pub struct TaskTool {
@@ -66,7 +69,8 @@ editing in a known location, grepping for a literal you will act on immediately.
                     "type": "array",
                     "items": { "type": "string" },
                     "description": "Investigation prompt for the subagent. Use one for a focused question, or multiple to run independent investigations in parallel. Examples: 'List all tests in this project', 'Where is config loaded?', 'How does the agent loop work?'"
-                }
+                },
+                "note": { "type": "string", "description": "Short human note shown in the UI next to this action (optional)" }
             },
             "required": ["prompts"]
         })

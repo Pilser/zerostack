@@ -57,7 +57,8 @@ impl Tool for ReadTool {
             "properties": {
                 "path": { "type": "string", "description": "Path to the file (relative or absolute)" },
                 "offset": { "type": "integer", "description": "Line number to start from (1-indexed)" },
-                "limit": { "type": "integer", "description": "Maximum number of lines to read" }
+                "limit": { "type": "integer", "description": "Maximum number of lines to read" },
+                "note": { "type": "string", "description": "Short human note shown in the UI next to this action (optional)" }
             },
             "required": ["path"]
         })

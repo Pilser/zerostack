@@ -44,7 +44,8 @@ impl Tool for FindFilesTool {
                 "path": {
                     "type": "string",
                     "description": "Directory to search in (defaults to current working directory)"
-                }
+                },
+                "note": { "type": "string", "description": "Short human note shown in the UI next to this action (optional)" }
             },
             "required": ["pattern"]
         })

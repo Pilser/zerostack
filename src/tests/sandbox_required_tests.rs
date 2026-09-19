@@ -142,6 +142,7 @@ fn echo_args() -> BashArgs {
     BashArgs {
         command: "echo hello".to_string(),
         timeout: None,
+        note: None,
     }
 }
 

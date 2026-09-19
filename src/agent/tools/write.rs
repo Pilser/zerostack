@@ -56,7 +56,8 @@ impl Tool for WriteTool {
             "type": "object",
             "properties": {
                 "path": { "type": "string", "description": "Path to the file (relative or absolute)" },
-                "content": { "type": "string", "description": "Content to write to the file" }
+                "content": { "type": "string", "description": "Content to write to the file" },
+                "note": { "type": "string", "description": "Short human note shown in the UI next to this action (optional)" }
             },
             "required": ["path", "content"]
         })
