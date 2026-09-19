@@ -11,8 +11,9 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 /// Consecutive identical (tool, args, output) pairs that declare a stall.
-/// Two in a row can be a legitimate retry; three is a loop.
-pub(crate) const IDENTICAL_REPEATS: usize = 3;
+/// A couple of repeats can be legitimate retry/polling; four in a row is
+/// a loop. Anything that differs resets the streak.
+pub(crate) const IDENTICAL_REPEATS: usize = 4;
 
 fn hash_pair(input_hash: u64, output: &str) -> u64 {
     let mut h = DefaultHasher::new();
