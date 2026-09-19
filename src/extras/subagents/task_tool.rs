@@ -120,8 +120,14 @@ editing in a known location, grepping for a literal you will act on immediately.
                         Some(extra) => format!("{extra}\n\n{prompt_text}"),
                         None => prompt_text,
                     };
-                let agent =
-                    builder::build_explore_agent(model, max_turns, &config, architecture).await;
+                let agent = builder::build_explore_agent(
+                    model,
+                    max_turns,
+                    &config,
+                    #[cfg(feature = "archmd")]
+                    architecture,
+                )
+                .await;
                 let result = tokio::time::timeout(
                     SUBAGENT_TIMEOUT,
                     agent.run_subagent(&prompt_text, max_turns, event_tx.as_ref(), &config.retry),
