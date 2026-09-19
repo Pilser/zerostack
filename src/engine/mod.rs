@@ -29,6 +29,7 @@
 //! read stdin.
 
 pub mod sink;
+mod stall;
 
 pub use sink::{EventSink, StringSink};
 
@@ -340,6 +341,12 @@ impl Engine {
     /// session. Mirrors `event_handler::handle_agent_event` +
     /// `handle_agent_done`, minus rendering. Returns the assistant's final
     /// response plus the turn's usage.
+    ///
+    /// Stall detector (exact hash): the same tool called with byte-identical
+    /// args producing byte-identical output, N times in a row, is a loop,
+    /// not progress. Stops the turn with a clear error instead of burning
+    /// all the way to MaxTurnsError. Anything that differs (args or output)
+    /// resets the streak, so legitimate polling/retry is unaffected.
     async fn drain_runner(
         &mut self,
         mut runner: AgentRunner,
@@ -357,6 +364,8 @@ impl Engine {
         let mut usage = TurnUsage::default();
         let mut final_response = String::new();
         let mut turn_error: Option<String> = None;
+        // Exact-hash stall detector: reset per turn (see also Retrying arm).
+        let mut stall = stall::StallTracker::new(stall::IDENTICAL_REPEATS);
 
         while let Some(event) = runner.event_rx.recv().await {
             // Live tap for embedders (TUI equivalent: reading event_rx direct).
@@ -387,6 +396,13 @@ impl Engine {
                         self.turn_trace
                             .push(CompactString::from(format!("→ {summary}")));
                     }
+                    // Stall detector: remember this call's exact input so the
+                    // matching result completes the (input, output) pair.
+                    stall.observe_call(
+                        event_id.as_str(),
+                        name.as_str(),
+                        &serde_json::to_string(&args).unwrap_or_default(),
+                    );
                     let call_id = self.session.add_tool_call(&name, &args);
                     self.stamp_turn();
                     self.push_pending_tool_call(event_id, call_id);
@@ -413,6 +429,17 @@ impl Engine {
                     self.session.add_tool_result(call_id, &name, &output);
                     self.stamp_turn();
                     self.save_session_best_effort();
+                    // Stall detector: an exact identical streak stops the turn
+                    // with a clear error instead of burning to MaxTurnsError.
+                    if stall.observe_result(event_id.as_str(), output.as_str()) {
+                        turn_error = Some(format!(
+                            "StallDetected: identical tool input+output {}x in a row ({name}); stopping instead of burning the turn budget",
+                            stall::IDENTICAL_REPEATS
+                        ));
+                        self.pending_tool_calls.clear();
+                        self.save_session_best_effort();
+                        break;
+                    }
                 }
                 AgentEvent::CompletionCall {
                     input_tokens,
@@ -430,6 +457,8 @@ impl Engine {
                 }
                 AgentEvent::Retrying { .. } => {
                     self.response_buf.clear();
+                    // Fresh attempt: prior partial pairs no longer apply.
+                    stall.reset();
                 }
                 AgentEvent::Done {
                     response,
