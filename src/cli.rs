@@ -405,7 +405,9 @@ impl Cli {
     }
 
     pub fn resolve_max_agent_turns(&self, cfg: &config::Config) -> usize {
-        self.max_agent_turns.or(cfg.max_agent_turns).unwrap_or(200)
+        self.max_agent_turns
+            .or(cfg.max_agent_turns)
+            .unwrap_or(config::NO_TURN_LIMIT)
     }
 
     pub fn resolve_no_context_files(&self, cfg: &config::Config) -> bool {

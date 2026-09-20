@@ -361,7 +361,7 @@ impl Startup {
     pub(crate) async fn init_features(&mut self) -> anyhow::Result<()> {
         #[cfg(feature = "subagents")]
         {
-            let task_max_turns = self.cfg.task_max_turns.unwrap_or(20);
+            let task_max_turns = self.cfg.task_max_turns.unwrap_or(config::NO_TURN_LIMIT);
             let qm = config::quick_models_map_ref(&self.cfg);
 
             // Resolve subagent model: subagent_model config > subagent_provider + model > main model

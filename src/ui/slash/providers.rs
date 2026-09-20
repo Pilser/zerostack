@@ -610,7 +610,10 @@ async fn model_for_subagent(
     ctx: &mut SlashCtx<'_>,
     model: crate::provider::AnyModel,
 ) -> anyhow::Result<()> {
-    let max_turns = ctx.cfg.task_max_turns.unwrap_or(20);
+    let max_turns = ctx
+        .cfg
+        .task_max_turns
+        .unwrap_or(crate::config::NO_TURN_LIMIT);
     let _agent = crate::extras::subagents::builder::build_explore_agent(
         model,
         max_turns,

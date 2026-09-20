@@ -18,6 +18,12 @@ use crate::extras::mcp::config::McpServerConfig;
 #[cfg(feature = "acp")]
 use crate::extras::acp::config::AcpServerConfig;
 
+/// Effective "no turn limit": turn-count budgets never bind in practice.
+/// A run always ends first via final answer, stall detection, human
+/// cancel/continue, context or cost. Deliberately NOT usize::MAX (avoids any
+/// overflow/allocation hazard in budget arithmetic); comparisons only.
+pub const NO_TURN_LIMIT: usize = 1_000_000;
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Config {
