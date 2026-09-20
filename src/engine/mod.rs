@@ -28,6 +28,7 @@
 //! flow) reports a friendly error instead of blocking: headless runs never
 //! read stdin.
 
+pub mod ask_freeze;
 pub mod sink;
 mod stall;
 
@@ -216,6 +217,13 @@ impl Engine {
     /// Run one user input string: plain message, `/` slash command, `.`
     /// dot-prompt command, or `!` shell command.
     pub async fn run_string(&mut self, input: &str) -> anyhow::Result<RunOutput> {
+        crate::engine::ask_freeze::set_current_session(self.session.id.as_str());
+        let res = self.run_string_inner(input).await;
+        crate::engine::ask_freeze::clear_current_session();
+        return res;
+    }
+
+    async fn run_string_inner(&mut self, input: &str) -> anyhow::Result<RunOutput> {
         let text = input.trim();
         if text.is_empty() {
             return Ok(RunOutput::ignored());

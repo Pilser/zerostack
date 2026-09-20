@@ -78,6 +78,7 @@ impl Tool for GrepTool {
     }
 
     async fn call(&self, args: GrepArgs) -> Result<String, ToolError> {
+        crate::engine::ask_freeze::wait_if_frozen().await;
         tracing::debug!(
             "tool grep start: pattern={}, path={}, include={:?}",
             args.pattern,

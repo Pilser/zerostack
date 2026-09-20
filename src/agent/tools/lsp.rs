@@ -53,6 +53,7 @@ impl Tool for LspTool {
     }
 
     async fn call(&self, args: LspArgs) -> Result<String, ToolError> {
+        crate::engine::ask_freeze::wait_if_frozen().await;
         match args.path {
             Some(path) => {
                 let expanded = crate::fs::expand_tilde(&path);

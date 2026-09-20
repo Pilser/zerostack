@@ -80,6 +80,13 @@ fn build_explore_agent_inner<M: CompletionModel + 'static>(
         }
     }
 
+    // Ask tool for subagents (session-bound, same drawer as main). Wired by
+    // the embedder via set_ask_tool_factory; without it subagents simply
+    // have no ask capability (backward compat).
+    if let Some(factory) = crate::extras::subagents::ask_tool_factory() {
+        tools.push(factory());
+    }
+
     #[cfg(feature = "hooks")]
     let tools = crate::extras::hooks::wrap_from_global(tools, None);
 

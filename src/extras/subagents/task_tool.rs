@@ -77,6 +77,7 @@ editing in a known location, grepping for a literal you will act on immediately.
     }
 
     async fn call(&self, args: TaskArgs) -> Result<String, ToolError> {
+        crate::engine::ask_freeze::wait_if_frozen().await;
         if args.prompts.is_empty() {
             return Err(ToolError::Msg("subagent: prompts must not be empty".into()));
         }

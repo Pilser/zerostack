@@ -192,6 +192,7 @@ impl Tool for BashTool {
     }
 
     async fn call(&self, args: BashArgs) -> Result<String, ToolError> {
+        crate::engine::ask_freeze::wait_if_frozen().await;
         let commands = split_bash_commands(&args.command);
         tracing::debug!(
             "tool bash start: cmd_len={}, timeout={:?}, num_commands={}",

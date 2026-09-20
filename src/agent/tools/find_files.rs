@@ -52,6 +52,7 @@ impl Tool for FindFilesTool {
     }
 
     async fn call(&self, args: FindFilesArgs) -> Result<String, ToolError> {
+        crate::engine::ask_freeze::wait_if_frozen().await;
         tracing::debug!(
             "tool find_files start: pattern={}, path={}",
             args.pattern,

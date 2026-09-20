@@ -86,3 +86,21 @@ pub fn set_model_name(model_name: String) {
         cfg.model_name = model_name;
     }
 }
+
+static ASK_TOOL_FACTORY: Mutex<
+    Option<Arc<dyn Fn() -> Box<dyn rig::tool::ToolDyn> + Send + Sync>>,
+> = Mutex::new(None);
+
+pub fn set_ask_tool_factory(
+    factory: Arc<dyn Fn() -> Box<dyn rig::tool::ToolDyn> + Send + Sync>,
+) {
+    *ASK_TOOL_FACTORY.lock().unwrap_or_else(|e| e.into_inner()) = Some(factory);
+}
+
+pub(crate) fn ask_tool_factory(
+) -> Option<Arc<dyn Fn() -> Box<dyn rig::tool::ToolDyn> + Send + Sync>> {
+    ASK_TOOL_FACTORY
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .clone()
+}

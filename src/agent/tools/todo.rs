@@ -63,6 +63,7 @@ impl Tool for WriteTodoList {
     }
 
     async fn call(&self, args: TodoWriteArgs) -> Result<String, ToolError> {
+        crate::engine::ask_freeze::wait_if_frozen().await;
         tracing::debug!("tool todo_write start: items={}", args.todos.len());
         let coaching = check_perm(&self.permission, &self.ask_tx, "todo_write", "").await?;
 

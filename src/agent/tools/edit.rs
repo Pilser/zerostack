@@ -556,6 +556,7 @@ impl Tool for EditTool {
     }
 
     async fn call(&self, args: EditArgs) -> Result<String, ToolError> {
+        crate::engine::ask_freeze::wait_if_frozen().await;
         let path = crate::fs::expand_tilde(&args.path);
         let es = edit_system();
         tracing::debug!(

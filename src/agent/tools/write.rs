@@ -64,6 +64,7 @@ impl Tool for WriteTool {
     }
 
     async fn call(&self, args: WriteArgs) -> Result<String, ToolError> {
+        crate::engine::ask_freeze::wait_if_frozen().await;
         let expanded = crate::fs::expand_tilde(&args.path);
         tracing::debug!(
             "tool write start: path={}, content_len={}",
