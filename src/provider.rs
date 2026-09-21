@@ -817,9 +817,9 @@ impl AnyAgent {
         // `--loop` iteration/active state; see `runner::spawn_agent`. `None`
         // outside loop mode.
         #[cfg(feature = "hooks")] loop_info: Option<LoopInfo>,
-        /// Owning session for `ask_freeze` task-local attribution, forwarded
-        /// to `runner::spawn_agent`. `Engine` passes `Some`; paths without a
-        /// session pass `None` (legacy global resolution).
+        // Owning session for `ask_freeze` task-local attribution, forwarded
+        // to `runner::spawn_agent`. `Engine` passes `Some`; paths without a
+        // session pass `None` (legacy global resolution).
         session_id: Option<String>,
     ) -> AgentRunner {
         #[cfg(feature = "hooks")]

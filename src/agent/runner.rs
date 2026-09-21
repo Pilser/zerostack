@@ -320,9 +320,9 @@ pub fn spawn_agent<M>(
     // `stop_hook_active`/the block cap falls out for free: each iteration is
     // a fresh call to this function). `None` outside loop mode.
     #[cfg(feature = "hooks")] loop_info: Option<LoopInfo>,
-    /// Owning session for `ask_freeze` task-local attribution. `Some` from
-    /// `Engine` (which owns the id — no global race); `None` preserves the
-    /// legacy global resolution (tests, ACP path).
+    // Owning session for `ask_freeze` task-local attribution. `Some` from
+    // `Engine` (which owns the id — no global race); `None` preserves the
+    // legacy global resolution (tests, ACP path).
     session_id: Option<String>,
 ) -> AgentRunner
 where
