@@ -64,6 +64,8 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 thiserror = "2"
+base64 = "0.22"
+imagesize = "0.13"
 futures = "0.3"
 reqwest = "0.13"
 dirs = "6"

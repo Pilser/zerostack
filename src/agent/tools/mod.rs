@@ -8,6 +8,7 @@ pub(crate) mod list_dir;
 pub(crate) mod lsp;
 pub(crate) mod normalize;
 pub(crate) mod read;
+pub(crate) mod read_image;
 pub(crate) mod todo;
 pub(crate) mod write;
 

@@ -18,8 +18,7 @@ use crate::sandbox::Sandbox;
 /// Factory for one embedder-supplied tool instance. Factories (not instances)
 /// are registered because each agent build consumes its tools by value; the
 /// `Arc` makes the registry cloneable across builds and threads.
-pub type ExtraToolFactory =
-    std::sync::Arc<dyn Fn() -> Box<dyn rig::tool::ToolDyn> + Send + Sync>;
+pub type ExtraToolFactory = std::sync::Arc<dyn Fn() -> Box<dyn rig::tool::ToolDyn> + Send + Sync>;
 
 static EXTRA_TOOL_FACTORIES: std::sync::OnceLock<Vec<ExtraToolFactory>> =
     std::sync::OnceLock::new();
@@ -312,12 +311,16 @@ pub async fn build_agent_inner<M: CompletionModel + 'static>(
         let edit_tool = tools::EditTool::new(permission.clone(), ask_tx.clone());
         #[cfg(feature = "lsp")]
         let edit_tool = edit_tool.with_lsp(lsp_manager.clone());
-        let base_tools: SmallVec<[Box<dyn rig::tool::ToolDyn>; 8]> = SmallVec::from_buf([
+        let base_tools: SmallVec<[Box<dyn rig::tool::ToolDyn>; 9]> = SmallVec::from_buf([
             Box::new(tools::ReadTool::new(
                 permission.clone(),
                 ask_tx.clone(),
                 max_text_file_size,
                 max_read_lines,
+            )),
+            Box::new(tools::ReadImageTool::new(
+                permission.clone(),
+                ask_tx.clone(),
             )),
             Box::new(write_tool),
             Box::new(edit_tool),
@@ -559,6 +562,10 @@ pub fn build_btw_agent_inner<M: CompletionModel + 'static>(
             ask_tx.clone(),
             max_text_file_size,
             max_read_lines,
+        )),
+        Box::new(tools::ReadImageTool::new(
+            permission.clone(),
+            ask_tx.clone(),
         )),
         Box::new(tools::GrepTool::new(
             permission.clone(),

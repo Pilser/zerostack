@@ -551,6 +551,7 @@ async fn handle_agent_done(
                         iteration: ls.iteration,
                         active: ls.active,
                     }),
+                    None,
                 )
                 .await;
             run.agent_rx = Some(runner.event_rx);

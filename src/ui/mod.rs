@@ -539,6 +539,7 @@ pub(crate) async fn spawn_merge_agent(
             ui.cfg.retry.clone(),
             #[cfg(feature = "hooks")]
             None,
+            None,
         )
         .await;
     run.agent_rx = Some(runner.event_rx);
@@ -636,6 +637,7 @@ pub(crate) async fn start_main_run(
             history,
             ui.cfg.retry.clone(),
             #[cfg(feature = "hooks")]
+            None,
             None,
         )
         .await;
@@ -772,6 +774,7 @@ pub(crate) async fn mid_turn_compact_and_respawn(
             history,
             ui.cfg.retry.clone(),
             #[cfg(feature = "hooks")]
+            None,
             None,
         )
         .await;

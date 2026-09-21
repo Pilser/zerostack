@@ -366,6 +366,7 @@ impl<'a> App<'a> {
                     ui.cfg.retry.clone(),
                     #[cfg(feature = "hooks")]
                     None,
+                    None,
                 )
                 .await;
             run.agent_rx = Some(runner.event_rx);
@@ -1656,6 +1657,7 @@ impl<'a> App<'a> {
                                 self.ui.cfg.retry.clone(),
                                 #[cfg(feature = "hooks")]
                                 None,
+                                None,
                             )
                             .await;
                         self.run.agent_rx = Some(runner.event_rx);
@@ -1682,6 +1684,7 @@ impl<'a> App<'a> {
                                 history,
                                 self.ui.cfg.retry.clone(),
                                 #[cfg(feature = "hooks")]
+                                None,
                                 None,
                             )
                             .await;
@@ -1821,6 +1824,7 @@ impl<'a> App<'a> {
                                 iteration: 1,
                                 active,
                             }),
+                            None,
                         )
                         .await;
                     self.run.agent_rx = Some(runner.event_rx);
