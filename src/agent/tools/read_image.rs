@@ -202,7 +202,7 @@ impl Tool for ReadImageTool {
         let label = fmt.label();
 
         let response = format!(
-            "Image '{}' ({} {}x{}, {} bytes) — base64 as {} follows in the image channel.",
+            "Image '{}' ({} {}x{}, {} bytes) — base64 follows in the image channel.",
             path,
             label,
             w,

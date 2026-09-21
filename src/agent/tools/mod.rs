@@ -77,6 +77,7 @@ pub use find_files::FindFilesTool;
 pub use grep::GrepTool;
 pub use list_dir::ListDirTool;
 pub use read::ReadTool;
+pub use read_image::ReadImageTool;
 pub use todo::WriteTodoList;
 pub use write::WriteTool;
 
