@@ -187,6 +187,7 @@ async fn spawn_agent_events_pair_each_result_with_its_own_call_by_id() {
         RetryConfig::default(),
         #[cfg(feature = "hooks")]
         None,
+        None,
     );
 
     // One ordered log rather than a call vector and a result vector: the

@@ -328,6 +328,8 @@ async fn run_prompt(
             crate::retry::RetryConfig::default(),
             #[cfg(feature = "hooks")]
             None,
+            // ACP path carries no engine session: legacy global resolution.
+            None,
         )
         .await;
     let mut rx = runner.event_rx;

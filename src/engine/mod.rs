@@ -326,6 +326,10 @@ impl Engine {
                 self.cfg.retry.clone(),
                 #[cfg(feature = "hooks")]
                 None,
+                // Exact freeze attribution: Engine owns the session id, so the
+                // runner task is pinned to it even under concurrent turns on
+                // other sessions (no global race).
+                Some(self.session.id.to_string()),
             )
             .await;
         self.session.add_message(MessageRole::User, &prompt);

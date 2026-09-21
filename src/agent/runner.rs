@@ -320,6 +320,10 @@ pub fn spawn_agent<M>(
     // `stop_hook_active`/the block cap falls out for free: each iteration is
     // a fresh call to this function). `None` outside loop mode.
     #[cfg(feature = "hooks")] loop_info: Option<LoopInfo>,
+    /// Owning session for `ask_freeze` task-local attribution. `Some` from
+    /// `Engine` (which owns the id — no global race); `None` preserves the
+    /// legacy global resolution (tests, ACP path).
+    session_id: Option<String>,
 ) -> AgentRunner
 where
     M: CompletionModel + 'static,
@@ -330,7 +334,10 @@ where
     #[cfg(feature = "subagents")]
     crate::extras::subagents::set_subagent_event_tx(event_tx.clone());
 
-    let join = tokio::spawn(async move {
+    // Pin the owning session for the whole runner task: every tool the turn
+    // executes (including subagent spawns, which re-scope their own tasks)
+    // attributes to this session even under concurrent turns elsewhere.
+    let join = tokio::spawn(crate::engine::ask_freeze::scoped(session_id, async move {
         tracing::debug!(
             "spawn_agent: prompt_len={}, history_len={}, max_attempts={}",
             prompt.len(),
@@ -589,7 +596,7 @@ where
             )
             .await;
         }
-    });
+    }));
 
     AgentRunner {
         event_rx,

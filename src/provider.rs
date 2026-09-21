@@ -817,6 +817,10 @@ impl AnyAgent {
         // `--loop` iteration/active state; see `runner::spawn_agent`. `None`
         // outside loop mode.
         #[cfg(feature = "hooks")] loop_info: Option<LoopInfo>,
+        /// Owning session for `ask_freeze` task-local attribution, forwarded
+        /// to `runner::spawn_agent`. `Engine` passes `Some`; paths without a
+        /// session pass `None` (legacy global resolution).
+        session_id: Option<String>,
     ) -> AgentRunner {
         #[cfg(feature = "hooks")]
         let prompt = match crate::extras::hooks::dispatch_user_prompt_submit(prompt).await {
@@ -833,6 +837,7 @@ impl AnyAgent {
                 retry_config,
                 #[cfg(feature = "hooks")]
                 loop_info,
+                session_id,
             ),
             AnyAgent::OpenAI(a) => match a {
                 OpenAiAgent::Responses(a) => runner::spawn_agent(
@@ -842,6 +847,7 @@ impl AnyAgent {
                     retry_config,
                     #[cfg(feature = "hooks")]
                     loop_info,
+                    session_id.clone(),
                 ),
                 OpenAiAgent::Completions(a) => runner::spawn_agent(
                     a,
@@ -850,6 +856,7 @@ impl AnyAgent {
                     retry_config,
                     #[cfg(feature = "hooks")]
                     loop_info,
+                    session_id,
                 ),
             },
             AnyAgent::Anthropic(a) => runner::spawn_agent(
@@ -859,6 +866,7 @@ impl AnyAgent {
                 retry_config,
                 #[cfg(feature = "hooks")]
                 loop_info,
+                session_id,
             ),
             AnyAgent::Gemini(a) => runner::spawn_agent(
                 a,
@@ -867,6 +875,7 @@ impl AnyAgent {
                 retry_config,
                 #[cfg(feature = "hooks")]
                 loop_info,
+                session_id,
             ),
             AnyAgent::Ollama(a) => runner::spawn_agent(
                 a,
@@ -875,6 +884,7 @@ impl AnyAgent {
                 retry_config,
                 #[cfg(feature = "hooks")]
                 loop_info,
+                session_id,
             ),
             #[cfg(test)]
             AnyAgent::Mock(a) => runner::spawn_agent(
@@ -884,6 +894,7 @@ impl AnyAgent {
                 retry_config,
                 #[cfg(feature = "hooks")]
                 loop_info,
+                session_id,
             ),
         }
     }
